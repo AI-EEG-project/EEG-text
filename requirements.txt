@@ -1,0 +1,46 @@
+# EEG-to-Text Reconstruction — Dependencies
+# Generat de Lupse Ioan Victor, Sapt. 12 PR #1
+
+# ---- Procesare EEG ----
+mne
+scipy
+numpy
+h5py
+
+# ---- Modele EEG ----
+braindecode
+torch
+torchvision
+torchaudio
+
+# ---- NLP / Embeddings ----
+transformers
+sentence-transformers
+spacy
+nltk
+
+# ---- ML / DL ----
+scikit-learn
+torchmetrics
+
+# ---- Vizualizare ----
+matplotlib
+seaborn
+wordcloud
+umap-learn
+
+# ---- Backend ----
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+
+# ---- UI ----
+streamlit
+requests
+Pillow
+
+# ---- Utilitare ----
+jupyter
+ipykernel
+tqdm
