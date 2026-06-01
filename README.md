@@ -182,7 +182,7 @@ EEG-proiect/
     └── streamlit_app.py           # UI Streamlit — Lupse Ioan Victor
 ```
 
-> **Lupse Ioan Victor — Concluzii & Ghid termeni:** [`notebooks/lupse_conclusions.md`](notebooks/lupse_conclusions.md)
+> **Lupse Ioan Victor — Concluzii & Ghid termeni:** [`notebooks/lupse_conclusions.md`](notebooks/lupse/lupse_conclusions.md)
 
 ---
 
