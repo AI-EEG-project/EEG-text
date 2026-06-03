@@ -1,5 +1,5 @@
 """
-Re-antrenare proiectie liniara EEG->BERT cu MSE pe embeddings normalizate L2.
+Re-antrenare proiectie non-liniara (MLP) EEG->BERT cu MSE pe embeddings normalizate L2.
 
 CONCLUZIE FINALA dupa experimente:
   - InfoNCE pur (temp=0.07): Cosine=0.057, Top-5=0%  — esec total
@@ -18,11 +18,10 @@ Solutia pentru Top-5 > 30%:
   Laslo a atins ce e posibil cu EEGNet-POS + proiectie liniara.
 
 Rulare:
-    cd C:\\Users\\alexl\\School\\AI\\eeg_ai_project\\EEG-text
     .venv\\Scripts\\python retrain_infonce.py
 
 Produce:
-    app/models/linear_projection.pt   (MSE, versiunea optima pentru acest scope)
+    app/models/linear_projection.pt   (MLP Non-Linear, versiunea optima pentru acest scope)
     app/models/projection_mse_metrics.json
 """
 
@@ -47,22 +46,56 @@ y_train_words = y[train_idx]
 y_val_words   = y[val_idx]
 y_test_words  = y[test_idx]
 
-print(f'Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}')
+print(f'Original Trial Counts - Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}')
 
 # ── 2. Incarca vocabular + embeddings BERT ───────────────────────────────────
-with open('benchmark_config.json') as f:
+# BENCHMARK_CONFIG env var set by train_all_models.py to ensure all scripts
+# use the same config regardless of which files exist on disk.
+config_path = os.environ.get('BENCHMARK_CONFIG', None)
+if config_path is None:
+    config_path = 'benchmark_config_50_Zuco1_SR.json'
+    if not os.path.exists(config_path):
+        config_path = 'benchmark_config.json'
+
+with open(config_path, 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 vocab_list = config['vocabulary']
 word2idx   = {w: i for i, w in enumerate(vocab_list)}
-bert_emb   = np.load('app/models/bert_embeddings.npy')   # (200, 768)
-bert_t     = torch.tensor(bert_emb, dtype=torch.float32).to(device)
+bert_emb   = np.load('app/models/bert_embeddings.npy')   # Matricea de embeddings BERT
+
+# Hard alignment check — truncation is WRONG and causes 0% Top-1 accuracy.
+# Row i of bert_embeddings.npy must be the BERT embedding of vocabulary[i].
+# If sizes differ, the config and the embedding file are out of sync.
+if len(bert_emb) != len(vocab_list):
+    print(f"\n[ERROR] Alignment mismatch!")
+    print(f"  bert_embeddings.npy : {len(bert_emb)} rows")
+    print(f"  Active vocabulary   : {len(vocab_list)} words  (from {config_path})")
+    print(f"\n  Fix: regenerate bert_embeddings.npy for the active vocabulary:")
+    print(f"       python regenerate_bert_embeddings.py")
+    print(f"  Then re-run this script.\n")
+    import sys; sys.exit(1)
+
+bert_t = torch.tensor(bert_emb, dtype=torch.float32).to(device)
+print(f"Loaded Vocabulary Size: {len(vocab_list)}")
+print(f"Aligned BERT Embeddings Shape: {bert_emb.shape}")
+
+# ── 3. Filtrare date pentru cuvintele aflate in noul vocabular ──────────────────
+train_mask = np.array([w in word2idx for w in y_train_words])
+val_mask   = np.array([w in word2idx for w in y_val_words])
+test_mask  = np.array([w in word2idx for w in y_test_words])
+
+X_train, y_train_words = X_train[train_mask], y_train_words[train_mask]
+X_val, y_val_words     = X_val[val_mask], y_val_words[val_mask]
+X_test, y_test_words   = X_test[test_mask], y_test_words[test_mask]
+
+print(f'Filtered Trial Counts - Train: {len(X_train)}, Val: {len(X_val)}, Test: {len(X_test)}')
 
 y_train_idx = np.array([word2idx[w] for w in y_train_words])
 y_val_idx   = np.array([word2idx[w] for w in y_val_words])
 y_test_idx  = np.array([word2idx[w] for w in y_test_words])
 
-# ── 3. EEGNet (aceeasi arhitectura din notebook) ─────────────────────────────
+# ── 4. EEGNet (aceeasi arhitectura din notebook) ─────────────────────────────
 class EEGNetWithEmbedding(nn.Module):
     def __init__(self, n_channels=105, n_times=500,
                  F1=8, D=2, F2=16, kern_len=64,
@@ -92,7 +125,7 @@ class EEGNetWithEmbedding(nn.Module):
 
 eegnet = EEGNetWithEmbedding().to(device)
 eegnet.load_state_dict(torch.load('app/models/eegnet_model.pt', map_location=device))
-eegnet.eval()
+eegnet.train()
 
 def extract_emb(X_np, bs=32):
     out, Xt = [], torch.tensor(X_np[:, np.newaxis, :, :], dtype=torch.float32)
@@ -107,25 +140,29 @@ eeg_val   = extract_emb(X_val)
 eeg_test  = extract_emb(X_test)
 print(f'EEG emb shapes: {eeg_train.shape}, {eeg_val.shape}, {eeg_test.shape}')
 
-# ── 4. Loss hibrid: MSE + soft InfoNCE ───────────────────────────────────────
-#
-# MSE pe embeddings normalizate L2:
-#   - Aliniaza directia generala EEG -> BERT
-#   - Stabilizeaza antrenarea, evita colapsul
-#
-# InfoNCE cu temperature=0.5 (soft):
-#   - Forteaza discriminarea: cuvantul corect sa aiba scor mai mare
-#   - Temperature mare = distributie mai moale = gradiente stabile
-#   - Nu mai cere discriminare perfecta dintre cuvinte similare semantic
-#
-# loss_total = MSE + alpha * InfoNCE(temp=0.5)
-#   alpha=0.3 = InfoNCE contribuie 30% la gradient
 
-# ── 5. Antrenare MSE (varianta optima pentru EEGNet-POS) ─────────────────────
-proj      = nn.Linear(128, 768).to(device)
-optimizer = torch.optim.Adam(proj.parameters(), lr=1e-3)
+# ── 5. Cap de Proiectie Non-Liniar (MLP) ──────────────────────────────────────
+# Clasa MLP adauga capacitate non-liniara, LayerNorm si Dropout pentru a invata
+# relatiile semantice complexe fara a colapsa dimensional.
+class NonLinearProjectionHead(nn.Module):
+    def __init__(self, input_dim=128, output_dim=768, hidden_dim=256, dropout=0.3):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, output_dim)
+        )
+    def forward(self, x):
+        return self.net(x)
+
+
+# Instantiem MLP in loc de nn.Linear simple
+proj      = NonLinearProjectionHead(input_dim=128, output_dim=768, hidden_dim=256, dropout=0.4).to(device)
+optimizer = torch.optim.Adam(proj.parameters(), lr=0.1e-4, weight_decay=1e-7)
 mse_fn    = nn.MSELoss()
-N_EPOCHS  = 50
+N_EPOCHS  = 100
 BATCH     = 32
 
 def get_bert_target(idx_arr):
@@ -141,7 +178,7 @@ ev  = torch.tensor(eeg_val, dtype=torch.float32)
 bv  = torch.tensor(get_bert_target(y_val_idx), dtype=torch.float32)
 
 best_val = float('inf')
-print(f'\nAntrenare MSE (optim pentru EEGNet-POS) x {N_EPOCHS} epoci...')
+print(f'\nAntrenare MSE cu MLP (optim pentru EEGNet-POS) x {N_EPOCHS} epoci...')
 for epoch in range(N_EPOCHS):
     proj.train(); tl = 0
     for xb, yb in train_loader:
@@ -162,12 +199,13 @@ for epoch in range(N_EPOCHS):
         print(f'Ep {epoch+1:02d}/{N_EPOCHS} | train:{tl/len(train_loader):.4f} | val:{vl:.4f}')
     if vl < best_val:
         best_val = vl
-        torch.save(proj.state_dict(), 'app/models/linear_projection.pt')
+        os.makedirs('app/models/laslo', exist_ok=True)
+        torch.save(proj.state_dict(), 'app/models/laslo/projection.pt')
         print(f'  -> Proiectie salvata (val={vl:.4f})')
 print(f'Best val MSE: {best_val:.4f}')
 
 # ── 6. Evaluare finala ────────────────────────────────────────────────────────
-proj.load_state_dict(torch.load('app/models/linear_projection.pt', map_location=device))
+proj.load_state_dict(torch.load('app/models/laslo/projection.pt', map_location=device))
 proj.eval()
 
 with torch.no_grad():
@@ -181,7 +219,7 @@ t1 = sum(top5[i, 0] == word2idx[y_test_words[i]] for i in range(total))
 t5 = sum(word2idx[y_test_words[i]] in top5[i]     for i in range(total))
 mc = sims[np.arange(total), [word2idx[w] for w in y_test_words]].mean()
 
-print('\n=== REZULTATE MSE + soft InfoNCE ===')
+print('\n=== REZULTATE MSE + MLP Proiectie ===')
 print(f'Top-1 : {t1/total:.3f} ({t1}/{total})  | KPI>10%:  {"OK" if t1/total>.10 else "NU"}')
 print(f'Top-5 : {t5/total:.3f} ({t5}/{total})  | KPI>30%:  {"OK" if t5/total>.30 else "NU"}')
 print(f'Cosine: {mc:.3f}             | KPI>0.25: {"OK" if mc>.25 else "NU"}')
@@ -194,7 +232,7 @@ for i in range(min(12, total)):
     print(f'[{"OK" if tw==pw[0] else "--"}] True:{tw:20s} Top5:{pw}')
 
 metrics = {
-    'method': 'MSE pe embeddings normalizate L2 (optim pentru EEGNet-POS)',
+    'method': 'MSE pe embeddings normalizate L2 cu MLP non-liniar (optim pentru EEGNet-POS)',
     'note': 'Top-5>30% necesita EEG-Conformer + contrastive end-to-end (Magdas P2)',
     'top1': round(t1/total, 4), 'top5': round(t5/total, 4),
     'cosine': round(float(mc), 4),
@@ -203,7 +241,7 @@ metrics = {
     'kpi_top5_ok': bool(t5/total > .30),
     'kpi_cosine_ok': bool(mc > .25),
 }
-with open('app/models/projection_mse_metrics.json', 'w') as f:
+with open('app/models/laslo/metrics.json', 'w') as f:
     json.dump(metrics, f, indent=2)
-print('\nMetrici salvate: app/models/projection_mse_metrics.json')
-print('Model salvat:    app/models/linear_projection.pt')
+print('\nMetrici salvate: app/models/laslo/metrics.json')
+print('Model salvat:    app/models/laslo/projection.pt')

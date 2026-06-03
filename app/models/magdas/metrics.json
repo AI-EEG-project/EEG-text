@@ -1,12 +1,12 @@
 {
   "method": "MSE + Joint InfoNCE End-to-End Fine-Tuning (Conformer + MLP Head)",
   "note": "Sincronizat cu framework-ul de evaluare al lui Magdas P2 pentru a preveni colapsul",
-  "top1": 0.0,
-  "top5": 0.0734,
-  "cosine": 0.086,
-  "top1_count": 0,
-  "top5_count": 21,
-  "total_test": 286,
+  "top1": 0.0378,
+  "top5": 0.1072,
+  "cosine": 0.0819,
+  "top1_count": 61,
+  "top5_count": 173,
+  "total_test": 1614,
   "kpi_top1_ok": false,
   "kpi_top5_ok": false,
   "kpi_cosine_ok": false

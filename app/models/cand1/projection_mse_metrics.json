@@ -1,0 +1,26 @@
+{
+  "method": "MSE pe embeddings normalizate L2 cu MLP non-liniar (EEG-Conformer Features)",
+  "note": "Optimizat pentru antrenarea end-to-end conform propunerilor lui Magdas P2",
+  "top1": 0.3375,
+  "top5": 0.3688,
+  "cosine": 0.9608,
+  "top1_count": 54,
+  "top5_count": 59,
+  "total_test": 160,
+  "kpi_top1_ok": true,
+  "kpi_top5_ok": true,
+  "kpi_cosine_ok": true
+}
+=== EXEMPLE ===
+[OK] True:film                 Top5:['film', 'life', 'picture', 'movie', 'since']
+[--] True:story                Top5:['film', 'life', 'picture', 'since', 'movie']
+[OK] True:film                 Top5:['film', 'life', 'picture', 'movie', 'since']
+[--] True:film                 Top5:['life', 'film', 'movie', 'since', 'picture']
+[OK] True:film                 Top5:['film', 'life', 'picture', 'since', 'movie']
+[OK] True:film                 Top5:['film', 'life', 'picture', 'since', 'movie']
+[--] True:comedy               Top5:['film', 'life', 'picture', 'movie', 'since']
+[--] True:funny                Top5:['film', 'life', 'picture', 'movie', 'since']
+[--] True:story                Top5:['film', 'life', 'picture', 'since', 'movie']
+[--] True:funny                Top5:['film', 'life', 'movie', 'since', 'picture']
+[--] True:comedy               Top5:['life', 'film', 'movie', 'since', 'bad']
+[OK] True:film                 Top5:['film', 'life', 'picture', 'movie', 'since']

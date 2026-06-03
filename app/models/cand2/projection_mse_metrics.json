@@ -1,0 +1,32 @@
+{
+  "method": "MSE pe embeddings normalizate L2 cu MLP non-liniar (EEG-Conformer Features)",
+  "note": "Optimizat pentru antrenarea end-to-end conform propunerilor lui Magdas P2",
+  "top1": 0.1625,
+  "top5": 0.3812,
+  "cosine": 0.9677,
+  "top1_count": 26,
+  "top5_count": 61,
+  "total_test": 160,
+  "kpi_top1_ok": true,
+  "kpi_top5_ok": true,
+  "kpi_cosine_ok": true
+}
+
+=== REZULTATE MSE + MLP Proiectie ===
+Top-1 : 0.231 (37/160)  | KPI>10%:  OK
+Top-5 : 0.362 (58/160)  | KPI>30%:  OK
+Cosine: 0.967             | KPI>0.25: OK
+
+=== EXEMPLE ===
+[OK] True:film                 Top5:['film', 'life', 'very', 'new', 'movie']
+[--] True:story                Top5:['film', 'movie', 'life', 'very', 'since']
+[OK] True:film                 Top5:['film', 'life', 'movie', 'since', 'very']
+[OK] True:film                 Top5:['film', 'life', 'movie', 'very', 'new']
+[OK] True:film                 Top5:['film', 'movie', 'very', 'life', 'new']
+[OK] True:film                 Top5:['film', 'life', 'very', 'since', 'movie']
+[--] True:comedy               Top5:['since', 'life', 'good', 'film', 'those']
+[--] True:funny                Top5:['film', 'movie', 'very', 'life', 'since']
+[--] True:story                Top5:['movie', 'very', 'film', 'new', 'life']
+[--] True:funny                Top5:['film', 'movie', 'life', 'very', 'new']
+[--] True:comedy               Top5:['film', 'movie', 'very', 'life', 'new']
+[--] True:film                 Top5:['movie', 'very', 'film', 'new', 'life']

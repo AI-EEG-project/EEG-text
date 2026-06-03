@@ -1,0 +1,104 @@
+{
+  "examples": [
+    {
+      "id": 1,
+      "description": "Word: 'film'",
+      "filename": "film.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "film"
+    },
+    {
+      "id": 2,
+      "description": "Word: 'story'",
+      "filename": "story.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "story"
+    },
+    {
+      "id": 3,
+      "description": "Word: 'war'",
+      "filename": "war.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "war"
+    },
+    {
+      "id": 4,
+      "description": "Word: 'family'",
+      "filename": "family.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "family"
+    },
+    {
+      "id": 5,
+      "description": "Word: 'born'",
+      "filename": "born.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "born"
+    },
+    {
+      "id": 6,
+      "description": "Word: 'love'",
+      "filename": "love.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "love"
+    },
+    {
+      "id": 7,
+      "description": "Word: 'director'",
+      "filename": "director.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "director"
+    },
+    {
+      "id": 8,
+      "description": "Word: 'school'",
+      "filename": "school.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "school"
+    },
+    {
+      "id": 9,
+      "description": "Word: 'comedy'",
+      "filename": "comedy.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "comedy"
+    },
+    {
+      "id": 10,
+      "description": "Word: 'life'",
+      "filename": "life.npy",
+      "shape": [
+        105,
+        500
+      ],
+      "true_word": "life"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "method": "MSE pe embeddings normalizate L2 cu MLP non-liniar (optim pentru EEGNet-POS)",
+  "note": "Top-5>30% necesita EEG-Conformer + contrastive end-to-end (Magdas P2)",
+  "top1": 0.0,
+  "top5": 0.0143,
+  "cosine": 0.9572,
+  "top1_count": 0,
+  "top5_count": 23,
+  "total_test": 1614,
+  "kpi_top1_ok": false,
+  "kpi_top5_ok": false,
+  "kpi_cosine_ok": true
+}
