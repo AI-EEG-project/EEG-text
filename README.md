@@ -1,6 +1,7 @@
 # EEG-to-Text Reconstruction
 
 > Inteligenta Artificiala — Echipa de 3 persoane — Mai 2026
+> [Prezentare generala si Demo](https://www.youtube.com/watch?v=-Ieus3GEZyQ)
 
 ## Membrii echipei
 
