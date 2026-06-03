@@ -1,0 +1,12 @@
+{
+  "method": "MSE(w=1.0) + InfoNCE(temp=0.5, alpha=0.3)",
+  "top1": 0.0,
+  "top5": 0.0,
+  "cosine": 0.12,
+  "top1_count": 0,
+  "top5_count": 0,
+  "total_test": 108,
+  "kpi_top1_ok": false,
+  "kpi_top5_ok": false,
+  "kpi_cosine_ok": false
+}

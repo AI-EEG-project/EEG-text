@@ -1,2 +1,12 @@
 /venv/
 .idea
+__pycache__/
+*.pyc
+
+# Date brute si derivate (prea mari pentru git)
+data/zuco1/**/*.mat
+data/zuco2/**/*.mat
+data/X_preprocessed.npy
+
+# Note personale
+notebooks/lupse/promt puternic

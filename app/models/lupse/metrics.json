@@ -1,0 +1,20 @@
+{
+  "backbone": "Magdas EEG-Conformer (ZuCo 1.0 SR, InfoNCE)",
+  "loss": "InfoNCE (temp=0.07)",
+  "encoder_lr": 5e-06,
+  "proj_lr": 0.0005,
+  "best_val_loss": 5.1598,
+  "random_baseline": 5.2983,
+  "above_chance": true,
+  "top1": 0.0415,
+  "top5": 0.109,
+  "cosine": 0.1211,
+  "top1_count": 67,
+  "top5_count": 176,
+  "total_test": 1614,
+  "kpi_top1_ok": false,
+  "kpi_top5_ok": false,
+  "kpi_cosine_ok": false,
+  "output_encoder": "E:\\PycharmProjects\\EEG-proiect\\app\\models\\lupse\\encoder.pt",
+  "output_projection": "E:\\PycharmProjects\\EEG-proiect\\app\\models\\lupse\\projection.pt"
+}
